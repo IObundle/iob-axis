@@ -11,9 +11,9 @@
 //Set AXISTREAMOUT base address
 void axistream_out_init(int base_address);
 
-//Get value from FIFO (returns true if this is last byte from stream)
-bool axistream_out_pop(char *returnValue);
+//Place value in FIFO, also place indicator of last byte (TLAST)
+void axistream_out_push(char value, bool last);
 
-//Signal when FIFO empty
-bool axistream_out_empty();
+//Signal when FIFO is full
+bool axistream_out_full();
 
