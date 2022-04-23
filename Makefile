@@ -1,4 +1,4 @@
-AXISTREAMIN_DIR:=.
+AXISTREAMOUT_DIR:=.
 include config.mk
 
 .PHONY: sim sim-test sim-clean \

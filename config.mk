@@ -1,13 +1,13 @@
-TOP_MODULE=iob_axistream_in
+TOP_MODULE=iob_axistream_out
 
 #PATHS
-REMOTE_ROOT_DIR ?=sandbox/iob-axistream-in
-SIM_DIR ?=$(AXISTREAMIN_HW_DIR)/simulation
-FPGA_DIR ?=$(shell find $(AXISTREAMIN_DIR)/hardware -name $(FPGA_FAMILY))
-DOC_DIR ?=$(AXISTREAMIN_DIR)/document/$(DOC)
+REMOTE_ROOT_DIR ?=sandbox/iob-axistream-out
+SIM_DIR ?=$(AXISTREAMOUT_HW_DIR)/simulation
+FPGA_DIR ?=$(shell find $(AXISTREAMOUT_DIR)/hardware -name $(FPGA_FAMILY))
+DOC_DIR ?=$(AXISTREAMOUT_DIR)/document/$(DOC)
 
-LIB_DIR ?=$(AXISTREAMIN_DIR)/submodules/LIB
-AXISTREAMIN_HW_DIR:=$(AXISTREAMIN_DIR)/hardware
+LIB_DIR ?=$(AXISTREAMOUT_DIR)/submodules/LIB
+AXISTREAMOUT_HW_DIR:=$(AXISTREAMOUT_DIR)/hardware
 
 #MAKE SW ACCESSIBLE REGISTER
 MKREGS:=$(shell find $(LIB_DIR) -name mkregs.py)
@@ -26,10 +26,10 @@ $(TOP_MODULE)_version.txt:
 	echo $(VERSION) > version.txt
 
 #cpu accessible registers
-iob_axistream_in_swreg_def.vh iob_axistream_in_swreg_gen.vh: $(AXISTREAMIN_HW_DIR)/include/iob_axistream_in_swreg.vh
+iob_axistream_out_swreg_def.vh iob_axistream_out_swreg_gen.vh: $(AXISTREAMOUT_HW_DIR)/include/iob_axistream_out_swreg.vh
 	$(MKREGS) $< HW
 
-axistream-in-gen-clean:
+axistream-out-gen-clean:
 	@rm -rf *# *~ version.txt
 
-.PHONY: axistream-in-gen-clean
+.PHONY: axistream-out-gen-clean

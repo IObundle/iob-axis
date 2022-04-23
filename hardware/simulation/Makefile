@@ -1,15 +1,15 @@
-AXISTREAMIN_DIR:=../..
+AXISTREAMOUT_DIR:=../..
 
 incdir:=-I
 defmacro:=-D
 
-include $(AXISTREAMIN_DIR)/hardware/hardware.mk
+include $(AXISTREAMOUT_DIR)/hardware/hardware.mk
 
 ifeq ($(VCD),1)
 DEFINE+=$(defmacro)VCD
 endif
 
-VSRC+=$(AXISTREAMIN_HW_DIR)/simulation/testbench/axistream_in_tb.v
+VSRC+=$(AXISTREAMOUT_HW_DIR)/simulation/testbench/axistream_out_tb.v
 
 #icarus verilog simulator
 VLOG:=iverilog -W all -g2005-sv
@@ -36,7 +36,7 @@ test1: clean
 	make run VCD=0 TEST_LOG=">> test.log"
 
 debug:
-	@echo $(AXISTREAMIN_DIR)
+	@echo $(AXISTREAMOUT_DIR)
 	@echo $(MODULES)
 	@echo $(SUBMODULES_DIR)
 	@echo $(MKREGS)
@@ -46,7 +46,7 @@ debug:
 clean-testlog:
 	@rm -f test.log
 
-clean: axistream-in-hw-clean
+clean: axistream-out-hw-clean
 	@rm -f a.out *.vcd
 
 clean-all: clean-testlog clean

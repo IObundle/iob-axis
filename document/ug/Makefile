@@ -1,5 +1,5 @@
-AXISTREAMIN_DIR:=../..
-CORE_DIR:=$(AXISTREAMIN_DIR)
+AXISTREAMOUT_DIR:=../..
+CORE_DIR:=$(AXISTREAMOUT_DIR)
 
 NOCLEAN=-name "ug.pdf" -o -name "if.tex" -o -name "td.tex" \
 	-o -name "swreg.tex" -o -name "swop.tex" -o -name "inst.tex" \
@@ -9,4 +9,4 @@ figures:
 	mkdir -p ./figures
 	cp -r -u $(LIB_DIR)/document/figures/* ../figures/* ./figures
 
-include $(AXISTREAMIN_DIR)/document/document.mk
+include $(AXISTREAMOUT_DIR)/document/document.mk

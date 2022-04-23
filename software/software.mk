@@ -1,15 +1,15 @@
-include $(AXISTREAMIN_DIR)/config.mk
+include $(AXISTREAMOUT_DIR)/config.mk
 
-AXISTREAMIN_SW_DIR:=$(AXISTREAMIN_DIR)/software
+AXISTREAMOUT_SW_DIR:=$(AXISTREAMOUT_DIR)/software
 
 #include
-INCLUDE+=-I$(AXISTREAMIN_SW_DIR)
+INCLUDE+=-I$(AXISTREAMOUT_SW_DIR)
 
 #headers
-HDR+=$(AXISTREAMIN_SW_DIR)/*.h iob_axistream_in_swreg.h
+HDR+=$(AXISTREAMOUT_SW_DIR)/*.h iob_axistream_out_swreg.h
 
 #sources
-SRC+=$(AXISTREAMIN_SW_DIR)/iob-axistream-in.c
+SRC+=$(AXISTREAMOUT_SW_DIR)/iob-axistream-out.c
 
-iob_axistream_in_swreg.h: $(AXISTREAMIN_HW_DIR)/include/iob_axistream_in_swreg.vh
-	$(MKREGS) $< SW AXISTREAMIN 
+iob_axistream_out_swreg.h: $(AXISTREAMOUT_HW_DIR)/include/iob_axistream_out_swreg.vh
+	$(MKREGS) $< SW AXISTREAMOUT 

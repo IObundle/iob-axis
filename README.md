@@ -2,14 +2,14 @@
 
 ## What is this repository for? ##
 
-The IObundle AXISTREAMIN is a RISC-V-based Peripheral written in Verilog, which users
+The IObundle AXISTREAMOUT is a RISC-V-based Peripheral written in Verilog, which users
 can download for free, modify, simulate and implement in FPGA or ASIC. It is
-written in Verilog and includes a C software driver.  The IObundle AXISTREAMIN is a
+written in Verilog and includes a C software driver.  The IObundle AXISTREAMOUT is a
 very compact IP that works at high clock rates if needed. 
 
 ## TODO
 
-Currently, simulation, fpga building and documentation of this core (independently of a SoC, as described below) are not functioning. It was taken from iob-uart repository but not yet adapted to work with AXISTREAMIN core.
+Currently, simulation, fpga building and documentation of this core (independently of a SoC, as described below) are not functioning. It was taken from iob-uart repository but not yet adapted to work with AXISTREAMOUT core.
 However, this core is functional and can be used as a peripheral of a SoC as described in section **Integrate in SoC**.
 
 ## Simulate
@@ -39,13 +39,13 @@ export XILINXPATH=/path/to/xilinx/fpga/tools
 export LM_LICENSE_FILE=port@host:lic_or_dat_file
 ```
 
-To generate an FPGA neltlist for the AXISTREAMIN core type:
+To generate an FPGA neltlist for the AXISTREAMOUT core type:
 ```
 make fpga-build [FPGA_FAMILY=<fpga family>]
 ```
 where <fpga family> is the FPGA family's folder name
 
-To generate all FPGA families for the AXISTREAMIN core type:
+To generate all FPGA families for the AXISTREAMOUT core type:
 ```
 make fpga-build-all [FPGA_FAMILY_LIST="<fpga family directory name list>"]
 ```

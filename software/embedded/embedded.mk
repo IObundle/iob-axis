@@ -1,13 +1,13 @@
-ifeq ($(filter AXISTREAMIN, $(SW_MODULES)),)
+ifeq ($(filter AXISTREAMOUT, $(SW_MODULES)),)
 
-SW_MODULES+=AXISTREAMIN
+SW_MODULES+=AXISTREAOUTM
 
-include $(AXISTREAMIN_DIR)/software/software.mk
+include $(AXISTREAMOUT_DIR)/software/software.mk
 
 # add embeded sources
-SRC+=iob_axistream_in_swreg_emb.c
+SRC+=iob_axistream_out_swreg_emb.c
 
-iob_axistream_in_swreg_emb.c: iob_axistream_in_swreg.h
+iob_axistream_out_swreg_emb.c: iob_axistream_out_swreg.h
 	
 
 endif

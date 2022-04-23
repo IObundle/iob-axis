@@ -1,4 +1,4 @@
-FPGA_OBJ=iob_axistream_in.edif
+FPGA_OBJ=iob_axistream_out.edif
 FPGA_LOG=vivado.log
 
 CLKBUF_WRAPPER:=xilinx
