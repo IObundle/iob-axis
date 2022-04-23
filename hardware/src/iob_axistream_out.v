@@ -15,10 +15,10 @@ module iob_axistream_out
 `include "iob_s_if.vh"
 
    //additional inputs and outputs
-   `IOB_INPUT(tdata, 8),
-   `IOB_INPUT(tvalid, 1),
-   `IOB_OUTPUT(tready, 1),
-   `IOB_INPUT(tlast, 1), 
+   `IOB_OUTPUT(tdata, 8),
+   `IOB_OUTPUT(tvalid, 1),
+   `IOB_INPUT(tready, 1),
+   `IOB_OUTPUT(tlast, 1), 
 `include "gen_if.vh"
    );
 
@@ -34,12 +34,12 @@ module iob_axistream_out
    `IOB_WIRE(ext_mem_r_data, 9)
    `IOB_WIRE(ext_mem_r_addr, FIFO_DEPTH_LOG2)
    
-   `IOB_WIRE(fifo_full, 1)
-   `IOB_WIRE(fifo_read, 1)
+   `IOB_WIRE(fifo_empty, 1)
+   `IOB_WIRE(fifo_write, 1)
    `IOB_WIRE(axi_stream_next_delayed, 1)
-   //Only allow 1 clock with fifo_read enabled between toggles of AXISTREAMOUT_NEXT
+   //Only allow 1 clock with fifo_write enabled between toggles of AXISTREAMOUT_NEXT
    `IOB_REG(clk, axi_stream_next_delayed, AXISTREAMOUT_NEXT) always @(posedge CLK) OUT <= IN;
-   assign fifo_read = AXISTREAMOUT_NEXT & ~axi_stream_next_delayed;
+   assign fifo_write = AXISTREAMOUT_NEXT & ~axi_stream_next_delayed;
    
   
    iob_fifo_sync
@@ -60,17 +60,17 @@ module iob_axistream_out
       .ext_mem_r_addr  (ext_mem_r_addr),
       .ext_mem_r_data  (ext_mem_r_data),
       //read port
-      .r_en            (fifo_read),
-      .r_data          ({AXISTREAMOUT_OUT,AXISTREAMOUT_TLAST}),
-      .r_empty         (AXISTREAMOUT_EMPTY),
+      .r_en            (tready),
+      .r_data          ({tdata, tlast}),
+      .r_empty         (fifo_empty),
       //write port
-      .w_en            (tvalid),
-      .w_data          ({tdata, tlast}), //Store TLAST signal in lsb
-      .w_full          (fifo_full),
+      .w_en            (fifo_write),
+      .w_data          ({AXISTREAMOUT_IN,AXISTREAMOUT_TLAST}), //Store TLAST signal in lsb
+      .w_full          (AXISTREAMOUT_FULL),
       .level           ()
       );
   
-   `IOB_WIRE2WIRE(~fifo_full, tready)
+   `IOB_WIRE2WIRE(~fifo_empty, tvalid)
 
    //FIFO RAM
    iob_ram_2p #(
