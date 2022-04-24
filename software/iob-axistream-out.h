@@ -1,10 +1,6 @@
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdint.h>
+#include <stdbool.h>
 
 #include "iob_axistream_out_swreg.h"
-
-#define AXISTREAMOUT_PROGNAME "IOb-AXISTREAMOUT"
 
 //AXISTREAMOUT functions
 

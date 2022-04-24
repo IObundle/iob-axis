@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "iob-axistream-out.h"
 
 //AXISTREAMOUT functions
