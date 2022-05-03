@@ -27,6 +27,7 @@ module iob_axistream_out
 `include "iob_axistream_out_swreg_gen.vh"
    
    `IOB_WIRE(fifo_empty, 1)
+   `IOB_VAR(fifo_empty_delayed, 1)
    //FIFO RAM
    `IOB_WIRE(ext_mem_w_en, 1)
    `IOB_WIRE(ext_mem_w_data, 9)
@@ -43,8 +44,8 @@ module iob_axistream_out
        )
    fifo
      (
-      .arst            (1'd0),
-      .rst             (rst),
+      .arst            (rst),
+      .rst             (1'd0),
       .clk             (clk),
       .ext_mem_w_en    (ext_mem_w_en),                                                                                                                                                                                                                                  
       .ext_mem_w_data  (ext_mem_w_data),
@@ -54,16 +55,18 @@ module iob_axistream_out
       .ext_mem_r_data  (ext_mem_r_data),
       //read port
       .r_en            (tready),
-      .r_data          ({tlast,tdata}),
+      .r_data          ({tlast,tdata}), //TLAST signal stored in msb
       .r_empty         (fifo_empty),
       //write port
       .w_en            (valid & |wstrb & (address == `AXISTREAMOUT_IN_ADDR)),
-      .w_data          (AXISTREAMOUT_IN), //Store TLAST signal in msb
+      .w_data          (wdata[8:0]), //Could use AXISTREAMOUT_IN here instead, but would need to delay 'w_en' by one clock
       .w_full          (AXISTREAMOUT_FULL),
       .level           ()
       );
   
-   `IOB_WIRE2WIRE(~fifo_empty, tvalid)
+   //Delay fifo_empty by one clock to allow for r_data to be ready before data transfer
+   `IOB_REG(clk,fifo_empty_delayed, fifo_empty)
+   `IOB_VAR2WIRE(~fifo_empty_delayed, tvalid)
 
    //FIFO RAM
    iob_ram_2p #(
