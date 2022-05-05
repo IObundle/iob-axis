@@ -27,7 +27,7 @@ module iob_axistream_out
 `include "iob_axistream_out_swreg_gen.vh"
    
    `IOB_WIRE(fifo_empty, 1)
-   `IOB_VAR(fifo_empty_delayed, 1)
+   `IOB_VAR(tvalid_tmp, 1)
    //FIFO RAM
    `IOB_WIRE(ext_mem_w_en, 1)
    `IOB_WIRE(ext_mem_w_data, 9)
@@ -64,9 +64,8 @@ module iob_axistream_out
       .level           ()
       );
   
-   //Delay fifo_empty by one clock to allow for r_data to be ready before data transfer
-   `IOB_REG(clk,fifo_empty_delayed, fifo_empty)
-   `IOB_VAR2WIRE(~fifo_empty_delayed, tvalid)
+   `IOB_REG(clk, tvalid_tmp, (tvalid_tmp & ~tready) | (~fifo_empty & tready))
+   `IOB_VAR2WIRE(tvalid_tmp, tvalid)
 
    //FIFO RAM
    iob_ram_2p #(
