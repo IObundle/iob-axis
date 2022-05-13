@@ -11,5 +11,5 @@ HDR+=$(AXISTREAMOUT_SW_DIR)/*.h iob_axistream_out_swreg.h
 #sources
 SRC+=$(AXISTREAMOUT_SW_DIR)/iob-axistream-out.c
 
-iob_axistream_out_swreg.h: $(AXISTREAMOUT_HW_DIR)/include/iob_axistream_out_swreg.vh
-	$(MKREGS) $< SW AXISTREAMOUT 
+iob_axistream_out_swreg.h: $(AXISTREAMOUT_DIR)/mkregs.conf
+	$(MKREGS) iob_axistream_out $(AXISTREAMOUT_DIR) SW

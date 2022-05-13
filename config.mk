@@ -27,8 +27,8 @@ $(TOP_MODULE)_version.txt:
 	echo $(VERSION) > version.txt
 
 #cpu accessible registers
-iob_axistream_out_swreg_def.vh iob_axistream_out_swreg_gen.vh: $(AXISTREAMOUT_HW_DIR)/include/iob_axistream_out_swreg.vh
-	$(MKREGS) $< HW
+iob_axistream_out_swreg_def.vh iob_axistream_out_swreg_gen.vh: $(AXISTREAMOUT_DIR)/mkregs.conf
+	$(MKREGS) iob_axistream_out $(AXISTREAMOUT_DIR) HW
 
 axistream-out-gen-clean:
 	@rm -rf *# *~ version.txt

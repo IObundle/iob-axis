@@ -23,7 +23,6 @@ module iob_axistream_out
    );
 
 //BLOCK Register File & Configuration control and status register file.
-`include "iob_axistream_out_swreg.vh"
 `include "iob_axistream_out_swreg_gen.vh"
    
    `IOB_WIRE(fifo_empty, 1)
