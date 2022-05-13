@@ -5,6 +5,10 @@ include $(AXISTREAMOUT_DIR)/config.mk
 #add itself to HW_MODULES list
 HW_MODULES+=AXISTREAOUTM
 
+#include iob_fifo_sync
+include $(MEM_DIR)/hardware/fifo/iob_fifo_sync/hardware.mk
+include $(MEM_DIR)/hardware/ram/iob_ram_2p/hardware.mk
+include $(MEM_DIR)/hardware/ram/iob_ram_2p_asym/hardware.mk
 
 AXISTREAMOUT_INC_DIR:=$(AXISTREAMOUT_HW_DIR)/include
 AXISTREAMOUT_SRC_DIR:=$(AXISTREAMOUT_HW_DIR)/src
