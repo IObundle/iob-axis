@@ -19,7 +19,7 @@ module iob_axistream_out
    `IOB_OUTPUT(tvalid, 1),
    `IOB_INPUT(tready, 1),
    `IOB_OUTPUT(tlast, 1), 
-`include "gen_if.vh"
+`include "iob_gen_if.vh"
    );
 
 //BLOCK Register File & Configuration control and status register file.
