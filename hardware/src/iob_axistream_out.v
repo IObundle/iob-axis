@@ -59,8 +59,8 @@ module iob_axistream_out
       .r_empty         (fifo_empty),
       //write port
       .w_en            (AXISTREAMOUT_IN_en),
-      .w_data          (AXISTREAMOUT_IN_wdata),
-      .w_full          (AXISTREAMOUT_FULL_rdata),
+      .w_data          (AXISTREAMOUT_IN_wdata[8:0]),
+      .w_full          (AXISTREAMOUT_FULL_rdata[0]),
       .level           ()
       );
   
