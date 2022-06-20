@@ -4,9 +4,10 @@
 
 module iob_axistream_out 
   # (
+     parameter TDATA_W = 8, //PARAM axi stream tdata width
+     parameter FIFO_DEPTH_LOG2 = 10, //PARAM depth of FIFO
      parameter DATA_W = 32, //PARAM CPU data width
-     parameter ADDR_W = `iob_axistream_out_swreg_ADDR_W, //MACRO CPU address section width
-	  parameter FIFO_DEPTH_LOG2 = 10
+     parameter ADDR_W = `iob_axistream_out_swreg_ADDR_W //MACRO CPU address section width
      )
 
   (
@@ -29,16 +30,16 @@ module iob_axistream_out
    `IOB_VAR(tvalid_tmp, 1)
    //FIFO RAM
    `IOB_WIRE(ext_mem_w_en, 1)
-   `IOB_WIRE(ext_mem_w_data, 9)
+   `IOB_WIRE(ext_mem_w_data, TDATA_W+1)
    `IOB_WIRE(ext_mem_w_addr, FIFO_DEPTH_LOG2)
    `IOB_WIRE(ext_mem_r_en, 1)
-   `IOB_WIRE(ext_mem_r_data, 9)
+   `IOB_WIRE(ext_mem_r_data, TDATA_W+1)
    `IOB_WIRE(ext_mem_r_addr, FIFO_DEPTH_LOG2)
   
    iob_fifo_sync
      #(
        .W_DATA_W (9),
-       .R_DATA_W (9),
+       .R_DATA_W (TDATA_W+1),
        .ADDR_W (FIFO_DEPTH_LOG2)
        )
    fifo
@@ -57,9 +58,9 @@ module iob_axistream_out
       .r_data          ({tlast,tdata}), //TLAST signal stored in msb
       .r_empty         (fifo_empty),
       //write port
-      .w_en            (valid & |wstrb & (address == `AXISTREAMOUT_IN_ADDR)),
-      .w_data          (wdata[8:0]), //Could use AXISTREAMOUT_IN here instead, but would need to delay 'w_en' by one clock
-      .w_full          (AXISTREAMOUT_FULL),
+      .w_en            (AXISTREAMOUT_IN_en),
+      .w_data          (AXISTREAMOUT_IN_wdata[8:0]),
+      .w_full          (AXISTREAMOUT_FULL_rdata[0]),
       .level           ()
       );
   
@@ -68,7 +69,7 @@ module iob_axistream_out
 
    //FIFO RAM
    iob_ram_2p #(
-      .DATA_W (9),
+      .DATA_W (TDATA_W+1),
       .ADDR_W (FIFO_DEPTH_LOG2)
     )
    fifo_memory
