@@ -23,7 +23,7 @@ module iob_axistream_out
 `include "iob_gen_if.vh"
    );
 	// FIFO Input width / Ouput width
-	localparam num_outputs_per_input=32/TDATA_W
+	localparam num_outputs_per_input=32/TDATA_W;
 
 //BLOCK Register File & Configuration control and status register file.
 `include "iob_axistream_out_swreg_gen.vh"
@@ -31,12 +31,12 @@ module iob_axistream_out
    `IOB_WIRE(fifo_empty, 1)
    `IOB_VAR(tvalid_tmp, 1)
    //FIFO RAM
-   `IOB_WIRE(ext_mem_w_en, 1)
-   `IOB_WIRE(ext_mem_w_data, TDATA_W)
-   `IOB_WIRE(ext_mem_w_addr, FIFO_DEPTH_LOG2)
+   `IOB_WIRE(ext_mem_w_en, num_outputs_per_input)
+   `IOB_WIRE(ext_mem_w_data, 32)
+   `IOB_WIRE(ext_mem_w_addr, (FIFO_DEPTH_LOG2-$clog2(num_outputs_per_input))*(num_outputs_per_input))
    `IOB_WIRE(ext_mem_r_en, 1)
-   `IOB_WIRE(ext_mem_r_data, TDATA_W)
-   `IOB_WIRE(ext_mem_r_addr, FIFO_DEPTH_LOG2)
+   `IOB_WIRE(ext_mem_r_data, 32)
+   `IOB_WIRE(ext_mem_r_addr, (FIFO_DEPTH_LOG2-$clog2(num_outputs_per_input))*(num_outputs_per_input))
 	
    // Set unused rdata bits to 0
    `IOB_WIRE2WIRE({(`AXISTREAMOUT_FULL_W-1){1'b0}}, AXISTREAMOUT_FULL_rdata[`AXISTREAMOUT_FULL_W-1:1])
@@ -100,15 +100,25 @@ module iob_axistream_out
    `IOB_REG(clk, tvalid_tmp, (tvalid_tmp & ~tready) | (~fifo_empty & tready & (!written_last_word | fifo_level>num_outputs_per_input | last_wstrb[num_outputs_per_input-fifo_level]))) 
    `IOB_VAR2WIRE(tvalid_tmp, tvalid)
 
+	//Convert ext_mem_w_en signal to byte enable signal
+	localparam num_bytes_per_output = TDATA_W/8;
+   `IOB_WIRE(ext_mem_w_en_be, 32/8)
+   genvar c;
+   generate
+      for (c = 0; c < num_outputs_per_input; c = c + 1) begin
+         assign ext_mem_w_en_be[c*num_bytes_per_output+:num_bytes_per_output] = {num_bytes_per_output{ext_mem_w_en[c]}};
+      end
+   endgenerate
+
    //FIFO RAM
-   iob_ram_2p #(
-      .DATA_W (TDATA_W),
-      .ADDR_W (FIFO_DEPTH_LOG2)
+   iob_ram_2p_be #(
+      .DATA_W (32),
+      .ADDR_W ((FIFO_DEPTH_LOG2-$clog2(num_outputs_per_input))*(num_outputs_per_input))
     )
    fifo_memory
    (
       .clk      (clk),
-      .w_en     (ext_mem_w_en),
+      .w_en     (ext_mem_w_en_be),
       .w_data   (ext_mem_w_data),
       .w_addr   (ext_mem_w_addr),
       .r_en     (ext_mem_r_en),
