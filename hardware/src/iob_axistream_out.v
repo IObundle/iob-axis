@@ -5,7 +5,7 @@
 module iob_axistream_out 
   # (
      parameter TDATA_W = 8, //PARAM axi stream tdata width
-     parameter FIFO_DEPTH_LOG2 = 10, //PARAM depth of FIFO
+     parameter FIFO_DEPTH_LOG2 = 4, //PARAM depth of FIFO
      parameter DATA_W = 32, //PARAM CPU data width
      parameter ADDR_W = `iob_axistream_out_swreg_ADDR_W //MACRO CPU address section width
      )
@@ -23,36 +23,38 @@ module iob_axistream_out
 `include "iob_gen_if.vh"
    );
 	// FIFO Input width / Ouput width
-	localparam num_outputs_per_input=32/TDATA_W;
+	localparam N=32/TDATA_W;
 
 //BLOCK Register File & Configuration control and status register file.
 `include "iob_axistream_out_swreg_gen.vh"
    
    `IOB_WIRE(fifo_empty, 1)
+   `IOB_WIRE(fifo_full, 1)
    `IOB_VAR(tvalid_int, 1)
    `IOB_VAR(tlast_int, 1)
+   `IOB_VAR(storing_tlast_word, 1)
    //FIFO RAM
-   `IOB_WIRE(ext_mem_w_en, num_outputs_per_input)
+   `IOB_WIRE(ext_mem_w_en, N)
    `IOB_WIRE(ext_mem_w_data, 32)
-   `IOB_WIRE(ext_mem_w_addr, (FIFO_DEPTH_LOG2-$clog2(num_outputs_per_input))*(num_outputs_per_input))
+   `IOB_WIRE(ext_mem_w_addr, (FIFO_DEPTH_LOG2-$clog2(N))*(N))
    `IOB_WIRE(ext_mem_r_en, 1)
    `IOB_WIRE(ext_mem_r_data, 32)
-   `IOB_WIRE(ext_mem_r_addr, (FIFO_DEPTH_LOG2-$clog2(num_outputs_per_input))*(num_outputs_per_input))
+   `IOB_WIRE(ext_mem_r_addr, (FIFO_DEPTH_LOG2-$clog2(N))*(N))
 	
    // Set unused rdata bits to 0
    `IOB_WIRE2WIRE({(`AXISTREAMOUT_FULL_W-1){1'b0}}, AXISTREAMOUT_FULL_rdata[`AXISTREAMOUT_FULL_W-1:1])
 
 	//Register to store tlast wstrb
-   `IOB_WIRE(last_wstrb, num_outputs_per_input)
-   iob_reg #(.DATA_W(num_outputs_per_input))
+   `IOB_WIRE(last_wstrb, N)
+   iob_reg #(.DATA_W(N))
    axistreamout_wstrb_next_word_last (
        .clk        (clk),
        .arst       (rst),
-       .arst_val   (1'b0),
+       .arst_val   ({N{1'b0}}),
 	    .rst        (fifo_empty & storing_tlast_word), //Reset when TLAST word is sent
-       .rst_val    (1'b0),
+       .rst_val    ({N{1'b0}}),
        .en         (AXISTREAMOUT_WSTRB_NEXT_WORD_LAST_en), 
-       .data_in    (AXISTREAMOUT_WSTRB_NEXT_WORD_LAST_wdata[0+:num_outputs_per_input]),
+       .data_in    (AXISTREAMOUT_WSTRB_NEXT_WORD_LAST_wdata[0+:N]),
        .data_out   (last_wstrb) 
    );
 
@@ -60,7 +62,6 @@ module iob_axistream_out
 	//Enable when TLAST word wstrb has been defined (in the last_wstrb register) 
 	//and a value has been inserted word.
 	//Reset when TLAST word is sent.
-   `IOB_VAR(storing_tlast_word, 1)
    `IOB_REG_RE(clk, fifo_empty & storing_tlast_word, 1'b0, last_wstrb & AXISTREAMOUT_IN_en, storing_tlast_word, 1'b1) 
   
    `IOB_WIRE(fifo_level, FIFO_DEPTH_LOG2+1)
@@ -105,7 +106,7 @@ module iob_axistream_out
 	//        or
 	//          TLAST word is stored, is on the last word and on a valid
 	//          portion of wstrb
-   `IOB_REG(clk, tvalid_int, (tvalid_int & ~tready) | (~fifo_empty & tready & (!storing_tlast_word | fifo_level>num_outputs_per_input | last_wstrb[num_outputs_per_input-fifo_level]))) 
+   `IOB_REG(clk, tvalid_int, (tvalid_int & ~tready) | (~fifo_empty & tready & (!storing_tlast_word | fifo_level>N | last_wstrb[N-fifo_level]))) 
    `IOB_VAR2WIRE(tvalid_int, tvalid)
 
 	//Next is tlast if: 
@@ -115,7 +116,7 @@ module iob_axistream_out
 	//        next portion of wstrb is zero (meaning this is the last portion of wstrb) (can only happen if fifo_level>1)
 	//        or
 	//        fifo_level is 1 (only reaches this value when wstrb is all ones)
-   `IOB_REG(clk, tlast_int, (tlast_int & ~tready) | (~fifo_empty & tready & fifo_level<=num_outputs_per_input & (fifo_level>1?~last_wstrb[num_outputs_per_input-fifo_level+1]:fifo_level==1))) 
+   `IOB_REG(clk, tlast_int, (tlast_int & ~tready) | (~fifo_empty & tready & fifo_level<=N & (fifo_level>1?~last_wstrb[N-fifo_level+1]:fifo_level==1))) 
 	// TLAST active only while data is valid
    `IOB_VAR2WIRE(tlast_int & tvalid_int, tlast)
 
@@ -124,7 +125,7 @@ module iob_axistream_out
    `IOB_WIRE(ext_mem_w_en_be, 32/8)
    genvar c;
    generate
-      for (c = 0; c < num_outputs_per_input; c = c + 1) begin
+      for (c = 0; c < N; c = c + 1) begin
          assign ext_mem_w_en_be[c*num_bytes_per_output+:num_bytes_per_output] = {num_bytes_per_output{ext_mem_w_en[c]}};
       end
    endgenerate
@@ -132,7 +133,7 @@ module iob_axistream_out
    //FIFO RAM
    iob_ram_2p_be #(
       .DATA_W (32),
-      .ADDR_W ((FIFO_DEPTH_LOG2-$clog2(num_outputs_per_input))*(num_outputs_per_input))
+      .ADDR_W ((FIFO_DEPTH_LOG2-$clog2(N))*(N))
     )
    fifo_memory
    (
