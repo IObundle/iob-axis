@@ -116,7 +116,7 @@ module iob_axistream_out
 	//        next portion of wstrb is zero (meaning this is the last portion of wstrb) (can only happen if fifo_level>1)
 	//        or
 	//        fifo_level is 1 (only reaches this value when wstrb is all ones)
-   `IOB_REG(clk, tlast_int, (tlast_int & ~tready) | (~fifo_empty & tready & fifo_level<=N & (fifo_level>1?~last_wstrb[N-fifo_level+1]:fifo_level==1))) 
+   `IOB_REG(clk, tlast_int, (tlast_int & ~tready) | (~fifo_empty & tready & storing_tlast_word & fifo_level<=N & (fifo_level>1?~last_wstrb[N-fifo_level+1]:fifo_level==1))) 
 	// TLAST active only while data is valid
    `IOB_VAR2WIRE(tlast_int & tvalid_int, tlast)
 
