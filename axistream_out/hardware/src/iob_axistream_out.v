@@ -122,8 +122,11 @@ module iob_axistream_out #(
       .w_data_i        (iob_wdata_i),
       .w_empty_o       (),
       .w_full_o        (FULL),
-      .w_level_o       ()
+      .w_level_o       (LEVEL)
    );
+
+   assign interrupt_o = INTERRUPT_EN & (LEVEL < THRESHOLD);
+   assign INTERRUPT_STATUS = interrupt_o;
 
    assign DATA_ready = ENABLE & ~FULL;
 

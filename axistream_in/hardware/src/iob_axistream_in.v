@@ -156,7 +156,7 @@ module iob_axistream_in #(
       .r_data_o        (DATA),
       .r_empty_o       (EMPTY),
       .r_full_o        (),
-      .r_level_o       (),
+      .r_level_o       (LEVEL),
       //write port
       .w_clk_i         (axis_clk_i),
       .w_cke_i         (axis_cke_i),
@@ -168,6 +168,10 @@ module iob_axistream_in #(
       .w_full_o        (fifo_full),
       .w_level_o       ()
    );
+
+   //interrupt
+   assign interrupt_o = INTERRUPT_EN & (LEVEL > THRESHOLD);
+   assign INTERRUPT_STATUS = interrupt_o;
 
    iob_fifo_async #(
       .W_DATA_W(1),
