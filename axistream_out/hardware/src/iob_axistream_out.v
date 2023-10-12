@@ -11,9 +11,19 @@ module iob_axistream_out #(
    localparam N = 32 / TDATA_W;
    localparam RAM_ADDR_W = FIFO_DEPTH_LOG2 - $clog2(N);
 
+   `include "iob_wire.vs"
+
+   assign iob_avalid = iob_avalid_i;
+   assign iob_addr = iob_addr_i;
+   assign iob_wdata = iob_wdata_i;
+   assign iob_wstrb = iob_wstrb_i;
+   assign iob_rvalid_o = iob_rvalid;
+   assign iob_rdata_o = iob_rdata;
+   assign iob_ready_o = iob_ready;
+
    //Dummy iob_ready_nxt_o and iob_rvalid_nxt_o to be used in swreg (unused ports)
-   wire iob_ready_nxt_o;
-   wire iob_rvalid_nxt_o;
+   wire iob_ready_nxt;
+   wire iob_rvalid_nxt;
 
    //Register File & Configuration control and status register file.
    `include "iob_axistream_out_swreg_inst.vs"
@@ -167,18 +177,25 @@ module iob_axistream_out #(
 
    assign axis_tvalid_o = (tvalid_int & valid_data) & axis_sw_enable;
 
-   //Priority encoder to find the position of the last valid bit in the WSTRB
-   wire [$clog2(N)-1:0] last_pos;
-   iob_prio_enc #(
-      .W   (N),
-      .MODE("HIGH")
-   ) prio_enc (
-      .unencoded_i(WSTRB),
-      .encoded_o  (last_pos)
-   );
+   generate
+       if (N == 1) begin
+           //LAST needs to be shifted according to the WSTRB before being inserted into the FIFO
+           wire [N-1:0] tlast_int = ({N{1'd0}} | LAST);
+       end else begin
+           //Priority encoder to find the position of the last valid bit in the WSTRB
+           wire [$clog2(N)-1:0] last_pos;
+           iob_prio_enc #(
+              .W   (N),
+              .MODE("HIGH")
+           ) prio_enc (
+              .unencoded_i(WSTRB),
+              .encoded_o  (last_pos)
+           );
 
-   //LAST needs to be shifted according to the WSTRB before being inserted into the FIFO
-   wire [N-1:0] tlast_int = ({N{1'd0}} | LAST) << last_pos;
+           //LAST needs to be shifted according to the WSTRB before being inserted into the FIFO
+           wire [N-1:0] tlast_int = ({N{1'd0}} | LAST) << last_pos;
+       end
+   endgenerate
 
    iob_fifo_async #(
       .W_DATA_W(N),
