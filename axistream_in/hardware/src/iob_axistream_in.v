@@ -9,15 +9,26 @@ module iob_axistream_in #(
 );
    // FIFO Input width / Ouput width
    localparam N = 32 / TDATA_W;
-   localparam RAM_ADDR_W = FIFO_DEPTH_LOG2 - $clog2(N);
+   localparam N_W = ($clog2(N) == 0) ? 1 : $clog2(N);
+   localparam RAM_ADDR_W = FIFO_DEPTH_LOG2 - N_W;
 
    //FSM states
    localparam STATE_WRITE = 1'd0;
    localparam STATE_PADDING = 1'd1;
 
+   `include "iob_wire.vs"
+
+   assign iob_avalid = iob_avalid_i;
+   assign iob_addr = iob_addr_i;
+   assign iob_wdata = iob_wdata_i;
+   assign iob_wstrb = iob_wstrb_i;
+   assign iob_rvalid_o = iob_rvalid;
+   assign iob_rdata_o = iob_rdata;
+   assign iob_ready_o = iob_ready;
+
    //Dummy iob_ready_nxt_o and iob_rvalid_nxt_o to be used in swreg (unused ports)
-   wire iob_ready_nxt_o;
-   wire iob_rvalid_nxt_o;
+   wire iob_ready_nxt;
+   wire iob_rvalid_nxt;
 
    // Configuration control and status register file.
    `include "iob_axistream_in_swreg_inst.vs"
@@ -53,8 +64,8 @@ module iob_axistream_in #(
    wire                  fifo_full;
    assign DATA_ready = ~EMPTY & ENABLE;
 
-   reg  [$clog2(N)-1:0] writen_words_nxt;
-   wire [$clog2(N)-1:0] writen_words;
+   reg  [N_W-1:0] writen_words_nxt;
+   wire [N_W-1:0] writen_words;
    reg                  state_nxt;
    wire                 state;
 
@@ -267,8 +278,8 @@ module iob_axistream_in #(
 
    // Written words register
    iob_reg_re #(
-      .DATA_W ($clog2(N)),
-      .RST_VAL({$clog2(N) {1'b0}}),
+      .DATA_W (N_W),
+      .RST_VAL({N_W {1'b0}}),
       .CLKEDGE("posedge")
    ) writen_words_reg (
       .clk_i (axis_clk_i),

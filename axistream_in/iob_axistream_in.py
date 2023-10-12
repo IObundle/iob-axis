@@ -24,6 +24,7 @@ class iob_axistream_in(iob_module):
         super()._create_submodules_list([
             {"interface": "iob_s_port"},
             {"interface": "iob_s_portmap"},
+            {"interface": "iob_wire"},
             iob_fifo_async,
             iob_reg_re,
             iob_ram_t2p,
