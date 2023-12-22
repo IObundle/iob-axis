@@ -101,6 +101,7 @@ module iob_axistream_out #(
    wire [32-1:0] fifo_data_i = tvalid_i==1'b1 ? tdata_i : iob_wdata_i;
 
    wire [FIFO_DEPTH_LOG2+1-1:0] fifo_level;
+   wire [TDATA_W-1:0] fifo_data;
    //DATA FIFO
    iob_fifo_async #(
       .W_DATA_W(DATA_W),
@@ -121,7 +122,7 @@ module iob_axistream_out #(
       .r_arst_i        (axis_arst_i),
       .r_rst_i         (axis_sw_rst),
       .r_en_i          (read_fifos),
-      .r_data_o        (axis_tdata_o),
+      .r_data_o        (fifo_data),
       .r_empty_o       (fifo_empty),
       .r_full_o        (),
       .r_level_o       (),
@@ -136,6 +137,39 @@ module iob_axistream_out #(
       .w_full_o        (FULL_rd),
       .w_level_o       (fifo_level)
    );
+
+   wire tvalid_tmp = (tvalid_int & valid_data) & axis_sw_enable;
+   //In case data has been read, but not used, save it and use when ready
+   wire [TDATA_W-1:0] saved_data;
+   wire          saved;
+   wire          save = tvalid_tmp & ~axis_tready_i & ~saved;
+   iob_reg_re #(
+      .DATA_W (TDATA_W),
+      .RST_VAL({TDATA_W{1'd0}})
+   ) saved_data_reg (
+      .clk_i (axis_clk_i),
+      .cke_i (axis_cke_i),
+      .arst_i(axis_arst_i),
+      .rst_i (SOFT_RESET_wr),
+      .en_i  (save),
+      .data_i(fifo_data),
+      .data_o(saved_data)
+   );
+   iob_reg_re #(
+      .DATA_W (1),
+      .RST_VAL(1'd0)
+   ) saved_reg (
+      .clk_i (axis_clk_i),
+      .cke_i (axis_cke_i),
+      .arst_i(axis_arst_i),
+      .rst_i (axis_tready_i),
+      .en_i  (tvalid_tmp),
+      .data_i(1'd1),
+      .data_o(saved)
+   );
+
+   assign axis_tvalid_o = saved ? 1'd1 : tvalid_tmp;
+   assign axis_tdata_o  = saved ? saved_data : fifo_data;
 
    assign DATA_wready_wr = ~FULL_rd;
 
@@ -186,8 +220,6 @@ module iob_axistream_out #(
       .w_full_o        (),
       .w_level_o       ()
    );
-
-   assign axis_tvalid_o = (tvalid_int & valid_data) & axis_sw_enable;
 
    wire [`IOB_MAX($clog2(N),1)-1:0] last_pos;
    generate
