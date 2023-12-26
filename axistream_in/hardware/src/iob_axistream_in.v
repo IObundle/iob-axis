@@ -237,7 +237,7 @@ module iob_axistream_in #(
       .w_arst_i        (axis_arst_i),
       .w_rst_i         (axis_sw_rst),
       .w_en_i          (wren_int),
-      .w_data_i        (axis_tvalid_i),
+      .w_data_i        (axis_tvalid_i & (state != STATE_PADDING)),
       .w_empty_o       (),
       .w_full_o        (),
       .w_level_o       ()
